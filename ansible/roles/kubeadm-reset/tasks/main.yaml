@@ -1,0 +1,36 @@
+---
+# delete cluster
+- name: remove kubernetes cluster without prompt
+  shell: kubeadm reset --force
+
+- name: remove kubernetes config folder
+  file:
+    path: /etc/kubernetes
+    state: absent
+
+# remove kubectl config files
+- name: remove root kubectl config 
+  file:
+    path: "/root/.kube/config"
+    state: absent   
+
+- name: remove user kubectl config 
+  file:
+    path: "/home/{{ user }}/.kube/config"
+    state: absent  
+
+# clean network
+- name: remove cni config folder
+  file:
+    path: /etc/cni/net.d
+    state: absent
+
+- name: remove cni0 net interface
+  community.general.nmcli:
+    conn_name: cni0
+    state: absent
+
+- name: remove flannel net interface
+  community.general.nmcli:
+    conn_name: flannel.1
+    state: absent

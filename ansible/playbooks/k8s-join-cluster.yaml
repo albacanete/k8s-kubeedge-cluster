@@ -1,0 +1,13 @@
+---
+- hosts: master
+  become: yes     # root privileges
+  roles:
+    - fetch-kubernetes-config
+
+- hosts: cloud
+  become: yes     # root privileges
+  roles:
+    - role: kubeadm-reset          # make sure it is not part of a cluster
+      user: kube
+    - role: kubeadm-join
+      user: kube

@@ -1,0 +1,13 @@
+# https://docs.ansible.com/ansible/latest/getting_started/get_started_inventory.html#get-started-inventory
+master:
+  hosts:
+    master01:
+      ansible_host: master
+cloud:
+  hosts:
+    cloud01:
+      ansible_host: cloud
+edge:
+  hosts:
+    edge01:
+      ansible_host: edge

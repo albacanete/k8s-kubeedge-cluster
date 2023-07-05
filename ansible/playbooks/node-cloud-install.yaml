@@ -1,0 +1,20 @@
+---
+- hosts: cloud
+  become: yes     # root privileges
+  roles:
+    # First, check https://docs.ansible.com/ansible/latest/reference_appendices/config.html#default-roles-path
+    - configure-node
+    - role: install-containerd
+      # pass variables to role
+      arch: amd64               # machine architecture (Ansible returns x86_64/aarch64 https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
+    - role: install-cni
+      # pass variables to role
+      arch: amd64
+      cni_version: v1.3.0       # network CNI plugins version
+    - role: install-kubernetes
+      # pass variables to role
+      arch: amd64
+      cri_version: v1.23.0      # kubelet CRI version
+      release: v1.23.16         # k8s binaries version
+      release_version: v0.4.0   # kubelet templates version
+      user: kube                # user to store kubectl autocomplete

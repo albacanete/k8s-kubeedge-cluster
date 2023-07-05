@@ -1,0 +1,82 @@
+---
+- name: install ethtool
+  apt:
+    name: ethtool
+    state: latest
+    update_cache: true
+
+- name: create binaries directory
+  file:
+    path: /usr/local/bin
+    state: directory
+
+# download and install Kubelet Container Runtime Interface (CRI)
+- name: download cri tarball
+  get_url:
+    url: "https://github.com/kubernetes-sigs/cri-tools/releases/download/{{ cri_version }}/crictl-{{ cri_version }}-linux-{{ arch }}.tar.gz"
+    dest: /tmp/crictl.tgz
+
+- name: untar cri in directory
+  unarchive:
+    remote_src: yes
+    src: /tmp/crictl.tgz
+    dest: /usr/bin
+
+# download and install kubeadm 
+- name: download kubeadm binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ release }}/bin/linux/{{ arch }}/kubeadm"
+    dest: /usr/bin
+
+- name: add execution permissions to kubeadm
+  file:
+    path: /usr/bin/kubeadm
+    mode: 0755
+
+# download and install kubelet
+- name: download kubelet binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ release }}/bin/linux/{{ arch }}/kubelet"
+    dest: /usr/bin
+
+- name: add execution permissions to kubelet
+  file:
+    path: /usr/bin/kubelet
+    mode: 0755
+
+# download kubelet service and configuration
+- name: download kubelet service
+  get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/release/{{ release_version }}/cmd/kubepkg/templates/latest/deb/kubelet/lib/systemd/system/kubelet.service"
+    dest: /etc/systemd/system/kubelet.service
+  notify: 
+    - restart kubelet
+
+- name: create kubelet confguration directory
+  file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+
+- name: download kubelet configuration
+  get_url:
+    url: "https://raw.githubusercontent.com/kubernetes/release/{{ release_version }}/cmd/kubepkg/templates/latest/deb/kubeadm/10-kubeadm.conf"
+    dest: /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+  notify: 
+    - restart kubelet
+
+# download and install kubectl
+- name: download kubectl binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ release }}/bin/linux/{{ arch }}/kubectl"
+    dest: /usr/bin
+
+- name: add execution permissions to kubectl
+  file:
+    path: /usr/bin/kubectl
+    mode: 0755
+
+# enable bash autocomplete
+- name: setup bash kubectl autocomplete
+  lineinfile:
+    path: /home/{{ user }}/.bashrc
+    line: source <(kubectl completion bash)

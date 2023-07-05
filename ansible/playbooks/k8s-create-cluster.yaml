@@ -1,0 +1,10 @@
+---
+- hosts: master
+  become: yes     # root privileges
+  roles:
+    - role: kubeadm-reset          # make sure there is no cluster running
+      user: kube
+    - role: kubeadm-init
+      user: kube
+      master_ip: 192.168.56.37
+      pod_subnet: 10.244.0.0/16     # Flannel subnetwork

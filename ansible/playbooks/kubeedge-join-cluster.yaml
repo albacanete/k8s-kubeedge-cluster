@@ -1,0 +1,16 @@
+---
+- hosts: master
+  become: yes     # root privileges
+  tasks:
+  - name: fetch kubectl config file
+    fetch:
+      src: /root/.kube/config
+      dest: /tmp/kube-config
+      flat: yes   # override the default behavior of appending hostname/path/to/file to the destination
+
+- hosts: edge
+  become: yes     # root privileges
+  roles:
+    - role: edgecore-join
+      user: kube
+      cloudcore_ip: 192.168.56.37

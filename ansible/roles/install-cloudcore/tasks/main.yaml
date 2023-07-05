@@ -1,0 +1,24 @@
+---
+- name: download kubeedge binaries
+  get_url:
+    url: "https://github.com/kubeedge/kubeedge/releases/download/{{ kubeedge_version }}/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}.tar.gz"
+    dest: /tmp/kubeedge.tar.gz
+
+- name: untar kubeedge binaries in tmp directory
+  unarchive:
+    src: /tmp/kubeedge.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: copy cloudcore to binaries directory
+  copy:
+    src: /tmp/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}/cloud/cloudcore/cloudcore
+    dest: /usr/local/bin/cloudcore
+    remote_src: yes
+    mode: 0755
+
+- name: remove tmp directory
+  file:
+    path: /tmp/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}
+    state: absent
+

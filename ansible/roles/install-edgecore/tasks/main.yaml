@@ -1,0 +1,42 @@
+---
+# download edgecore 
+- name: download kubeedge binaries
+  get_url:
+    url: "https://github.com/kubeedge/kubeedge/releases/download/{{ kubeedge_version }}/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}.tar.gz"
+    dest: /tmp/kubeedge.tar.gz
+
+- name: untar kubeedge binaries in tmp directory
+  unarchive:
+    src: /tmp/kubeedge.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: copy edgecore to binaries directory
+  copy:
+    src: /tmp/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}/edge/edgecore
+    dest: /usr/local/bin/edgecore
+    remote_src: yes
+    mode: 0755
+
+- name: remove tmp directory
+  file:
+    path: /tmp/kubeedge-{{ kubeedge_version }}-linux-{{ arch }}
+    state: absent
+
+# install kubectl
+- name: download kubectl binary
+  get_url:
+    url: "https://dl.k8s.io/release/{{ release }}/bin/linux/{{ arch }}/kubectl"
+    dest: /usr/local/bin
+
+- name: add execution permissions
+  file:
+    path: /usr/local/bin/kubectl
+    mode: 0755
+
+- name: setup bash kubectl autocomplete
+  lineinfile:
+    path: /home/{{ user }}/.bashrc
+    line: source <(kubectl completion bash)
+
+

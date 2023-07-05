@@ -1,0 +1,104 @@
+---
+# let root interact with the cluster
+- name: create root .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    mode: 0755
+
+- name: copy config to root home
+  copy:
+    src: /tmp/kube-config
+    dest: /root/.kube/config
+
+# let user interact with the cluster
+- name: create user .kube directory
+  file:
+    path: /home/{{ user }}/.kube
+    state: directory
+    mode: 0755
+
+- name: copy config to user home
+  copy:
+    src: /tmp/kube-config
+    dest: /root/.kube/config
+    owner: "{{ user }}"
+
+# create and set edgecore config file
+- name: create kubeedge config directory
+  file:
+    path: /etc/kubeedge/config
+    state: directory
+
+# edgecore --defaultconfig > /etc/kubeedge/config/edgecore.yaml
+- name: copy edgecore config file
+  copy:
+    src: ../files/edgecore.yaml
+    dest: /etc/kubeedge/config/edgecore.yaml
+
+# set the cloudcore IP in config file
+- name: set httpServer in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: '    httpServer: ""'
+    line: "    httpServer: {{ cloudcore_ip }}"  
+
+- name: set quic.server in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: '      server: ""'
+    line: "      server: {{ cloudcore_ip }}"  
+
+- name: set websocket.server in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: '      server: ""'
+    line: "      server: {{ cloudcore_ip }}"  
+
+- name: set edgeStream in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: '    server: ""'
+    line: "    server: {{ cloudcore_ip }}"  
+
+# set the edgecore node IP 
+- name: set nodeIP in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: "    nodeIP:"
+    line: "    nodeIP: {{ ansible_default_ipv4.address }}"  # !! all jetsons have eth0 and eth0 is ansible's default
+
+# set the edgecore hostname
+- name: set hostname in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: "    hostnameOverride:"
+    line: "    hostnameOverride: {{ inventory_hostname }}" 
+
+# get the cloudcore join token
+- name: get kubeedge cluster join token
+  shell: "kubectl get secret -n kubeedge tokensecret -o=jsonpath='{.data.tokendata}' | base64 -d"
+  register: token
+
+# print token in console
+- debug:
+    msg: "{{ token.stdout }}"
+
+- name: set token in config file
+  lineinfile:
+    path: /etc/kubeedge/config/edgecore.yaml
+    search_string: "    token:"
+    line: "    token: {{ token.stdout_lines[0] }}"  
+
+# set edgecore and systemd service
+- name: download edgecore service file
+  get_url:
+    url: "https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/tools/edgecore.service"
+    dest: /etc/systemd/system/edgecore.service
+
+- name: start edgecore
+  systemd:
+    name: edgecore
+    daemon_reload: true
+    enabled: true
+    state: restarted

@@ -1,0 +1,61 @@
+---
+- name: create kubernetes CDRs for kubeedge
+  shell: |
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/devices/devices_v1alpha2_device.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/devices/devices_v1alpha2_devicemodel.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/reliablesyncs/cluster_objectsync_v1alpha1.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/reliablesyncs/objectsync_v1alpha1.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/router/router_v1_ruleEndpoint.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/router/router_v1_rule.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/apps/apps_v1alpha1_edgeapplication.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/apps/apps_v1alpha1_nodegroup.yaml
+    kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/operations/operations_v1alpha1_nodeupgradejob.yaml
+  args:
+    executable: /bin/bash
+
+# Enable kubectl logs https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/tools/certgen.sh
+- name: create kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: directory
+
+- name: copy cert generation script
+  copy:
+    src: ../files/certgen.sh
+    dest: /etc/kubeedge/certgen.sh
+    mode: '0774'
+
+- name: execute cert generation script
+  shell: /etc/kubeedge/certgen.sh stream
+  environment:
+    CLOUDCOREIPS: "{{ cloudcore_ip }}"
+
+# Set cloudcore as systemd service
+- name: download cloudcore service file
+  get_url:
+    url: "https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/tools/cloudcore.service"
+    dest: /etc/systemd/system/cloudcore.service
+
+- name: create kubeedge config directory
+  file:
+    path: /etc/kubeedge/config
+    state: directory
+
+# cloudcore --defaultconfig > cloudcore.yaml
+- name: copy cloudcore config file
+  copy:
+    src: ../files/cloudcore.yaml
+    dest: /etc/kubeedge/config/cloudcore.yaml
+
+- name: set cloudcore ip in config file
+  replace:
+    path: /etc/kubeedge/config/cloudcore.yaml
+    regexp: '    advertiseAddress:\s*- ""$'
+    replace: '    advertiseAddress:\n    - {{ cloudcore_ip }}'
+
+- name: start cloudcore
+  systemd:
+    name: cloudcore
+    daemon_reload: true
+    enabled: true
+    state: restarted

@@ -1,0 +1,28 @@
+---
+- name: install dependency packages
+  apt:
+    pkg:
+      - socat
+      - conntrack
+      - ebtables
+    state: latest
+    update_cache: true
+
+# download tar
+- name: download cni tarball
+  get_url:
+    url: "https://github.com/containernetworking/plugins/releases/download/{{ cni_version }}/cni-plugins-linux-{{ arch }}-{{ cni_version }}.tgz"
+    dest: /tmp/cni_plugins.tgz
+
+# create destination directory
+- name: create cni plugins directory
+  file:
+    path: /opt/cni/bin
+    state: directory
+
+# untar plugins
+- name: untar binaries in directory
+  unarchive:
+    remote_src: yes
+    src: /tmp/cni_plugins.tgz
+    dest: /opt/cni/bin

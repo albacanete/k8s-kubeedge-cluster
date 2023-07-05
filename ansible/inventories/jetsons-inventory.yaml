@@ -1,0 +1,19 @@
+# https://docs.ansible.com/ansible/latest/getting_started/get_started_inventory.html#get-started-inventory
+master:
+  hosts:
+    master01:
+      ansible_host: tx22
+edge:
+  hosts:
+    edge01:
+      ansible_host: nano1
+    edge02:
+      ansible_host: nano11
+cloud:
+  hosts:
+    cloud01:
+      ansible_host: nano12
+nodes: # metagroup that organizes multiple groups
+  children:
+    cloud:
+    edge:

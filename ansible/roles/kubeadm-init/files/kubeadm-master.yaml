@@ -1,0 +1,23 @@
+# kubeadm-config.yaml
+kind: InitConfiguration
+apiVersion: kubeadm.k8s.io/v1beta2
+localAPIEndpoint:
+  advertiseAddress: 
+  bindPort: 6443
+nodeRegistration:
+  criSocket: "/var/run/containerd/containerd.sock"
+---
+kind: ClusterConfiguration
+apiVersion: kubeadm.k8s.io/v1beta3
+kubernetesVersion: v1.23.16
+networking:
+  podSubnet: 
+---
+kind: KubeletConfiguration
+apiVersion: kubelet.config.k8s.io/v1beta1
+cgroupDriver: systemd
+featureGates:
+  NodeSwap: true
+failSwapOn: false
+memorySwap:
+  swapBehavior: LimitedSwap

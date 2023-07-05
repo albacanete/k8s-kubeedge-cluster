@@ -1,0 +1,46 @@
+---
+## Forwarding IPv4 and letting iptables see bridged traffic 
+# Load modules for Kubernetes
+- name: create an empty file for Kubernetes modules params
+  file:
+    path: /etc/modules-load.d/k8s.conf
+    state: touch
+    # make task idempotent https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#examples
+    modification_time: preserve
+    access_time: preserve
+
+- name: configure module params for Kubernetes
+  blockinfile:
+    path: /etc/modules-load.d/k8s.conf
+    block: |
+          overlay
+          br_netfilter  
+
+# Verify that the overleay and br_netfilter modules are loaded 
+- name: load overlay kernel module
+  community.general.modprobe:
+    name: overlay
+    state: present
+
+- name: load overlay br_netfilter module
+  community.general.modprobe:
+    name: br_netfilter
+    state: present
+
+# Configure sysctl parameters required by setup, params persist across reboots
+- name: create an empty file for Kubernetes sysctl params
+  file:
+    path: /etc/sysctl.d/k8s.conf
+    state: touch
+    # make task idempotent https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#examples
+    modification_time: preserve
+    access_time: preserve
+
+- name: configure sysctl params for Kubernetes
+  blockinfile:
+    path: "/etc/sysctl.d/k8s.conf"
+    block: |
+          net.bridge.bridge-nf-call-iptables = 1
+          net.ipv4.ip_forward = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+  notify: apply sysctl params without reboot

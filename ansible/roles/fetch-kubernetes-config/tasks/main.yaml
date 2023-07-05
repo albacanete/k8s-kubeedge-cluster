@@ -1,0 +1,11 @@
+- name: fetch kubectl config file
+  fetch:
+    src: /root/.kube/config
+    dest: /tmp/kube-config
+    flat: yes   # override the default behavior of appending hostname/path/to/file to the destination
+
+- name: fetch kubeadm join command
+  fetch:
+    src: /etc/kubernetes/cluster_join_command.sh
+    dest: /tmp/cluster_join_command.sh
+    flat: yes   # override the default behavior of appending hostname/path/to/file to the destination
