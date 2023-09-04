@@ -1,0 +1,24 @@
+---
+# download keadm
+- name: download keadm
+  get_url:
+    url: https://github.com/kubeedge/kubeedge/releases/download/{{ keadm_version }}/keadm-{{ keadm_version }}-linux-{{ arch }}.tar.gz
+    dest: /tmp/keadm.tar.gz
+
+- name: untar keadm 
+  unarchive:
+    remote_src: yes
+    src: /tmp/keadm.tar.gz
+    dest: /tmp/
+
+- name: copy keadm to bin directory
+  copy:
+    remote_src: yes
+    src: /tmp/keadm-{{ keadm_version }}-linux-{{ arch }}/keadm/keadm
+    dest: /usr/local/bin/keadm
+    mode: 0755
+
+- name: delete tmp directory
+  file:
+    path: /tmp/keadm-{{ keadm_version }}-linux-{{ arch }}
+    state: absent

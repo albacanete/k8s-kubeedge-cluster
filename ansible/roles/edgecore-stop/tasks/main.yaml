@@ -1,0 +1,12 @@
+---
+- name: stop edgecore
+  systemd:
+    name: edgecore
+    daemon_reload: true
+    state: stopped
+
+# delete existing kubeedge directory
+- name: delete /etc/kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: absent

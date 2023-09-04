@@ -1,0 +1,63 @@
+---
+# let root interact with the cluster
+- name: create root .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    mode: 0755
+
+- name: copy config to root home
+  copy:
+    src: /tmp/kube-config
+    dest: /root/.kube/config
+
+# let user interact with the cluster
+- name: create user .kube directory
+  file:
+    path: /home/{{ user }}/.kube
+    state: directory
+    mode: 0755
+    owner: "{{ user }}"
+
+- name: copy config to user home
+  copy:
+    src: /tmp/kube-config
+    dest: /root/.kube/config
+    owner: "{{ user }}"
+
+# delete existing kubeedge directory
+- name: delete /etc/kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: absent
+
+# create flannel configuration
+- name: create flannel env directory
+  file:
+    path: /run/flannel
+    state: directory  
+
+- name: create flannel env file
+  file:
+    path: /run/flannel/subnet.env 
+    state: touch
+    # make task idempotent https://docs.ansible.com/ansible/latest/collections/ansible/builtin/file_module.html#examples
+    modification_time: preserve
+    access_time: preserve
+
+- name: fill flannel env file
+  blockinfile:
+    path: /run/flannel/subnet.env 
+    block: |
+          FLANNEL_NETWORK=10.240.0.0/16
+          FLANNEL_SUBNET=10.240.0.1/24
+          FLANNEL_MTU=1450
+          FLANNEL_IPMASQ=true
+
+# read contents from file: https://docs.ansible.com/ansible/latest/collections/ansible/builtin/slurp_module.html
+- name: read token
+  shell: kubectl get secret -nkubeedge tokensecret -o=jsonpath='{.data.tokendata}' | base64 -d
+  register: join_token
+
+- name: start edgecore
+  shell: keadm join --cloudcore-ipport={{ cloudcore_ip }}:10000 --token={{ join_token.stdout_lines[0] }} --kubeedge-version={{ kubeedge_version }} --cgroupdriver="systemd"  --runtimetype="remote" --remote-runtime-endpoint="unix://var/run/containerd/containerd.sock"

@@ -1,0 +1,9 @@
+---
+# delete cluster
+- name: remove cloudcore pod
+  shell: keadm reset --force
+
+- name: delete kubeedge folder
+  file:
+    path: /etc/kubeedge
+    state: absent

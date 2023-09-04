@@ -1,0 +1,3 @@
+---
+- name: deploy cloudcore as pod
+  shell: keadm init --advertise-address={{ master_ip }} --profile version={{ kubeedge_version }} --kube-config=/root/.kube/config

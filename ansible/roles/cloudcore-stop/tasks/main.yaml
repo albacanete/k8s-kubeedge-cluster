@@ -1,0 +1,18 @@
+---
+- name: stop cloudcore
+  systemd:
+    name: cloudcore
+    daemon_reload: true
+    state: stopped
+
+# delete existing kubeedge directory
+- name: delete /etc/kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: absent
+
+# delete kubectl home directory
+- name: delete home user directory
+  file:
+    path: /home/{{ ansible_user }}/.kube
+    state: absent
