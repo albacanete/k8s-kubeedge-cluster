@@ -1,0 +1,16 @@
+---
+- hosts: edge
+  become: yes     # root privileges
+  roles:
+    - edgecore-stop
+
+- hosts: cloud
+  become: yes     # root privileges
+  roles:
+    - kubeadm-reset
+
+- hosts: master
+  become: yes     # root privileges
+  roles:
+    - cloudcore-stop
+    - kubeadm-reset

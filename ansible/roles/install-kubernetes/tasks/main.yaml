@@ -78,5 +78,5 @@
 # enable bash autocomplete
 - name: setup bash kubectl autocomplete
   lineinfile:
-    path: /home/{{ user }}/.bashrc
+    path: /home/{{ ansible_user }}/.bashrc
     line: source <(kubectl completion bash)

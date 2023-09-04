@@ -1,0 +1,10 @@
+---
+- hosts: master
+  become: yes     # root privileges
+  roles:
+    - role: cloudcore-init
+      cloudcore_ip: 192.168.50.21
+    #- keadm-reset
+    #- role: keadm-init
+    #  master_ip: 192.168.50.21
+    #  kubeedge_version: v1.14.0   # cloudcore version

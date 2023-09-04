@@ -14,25 +14,24 @@
 # let user interact with the cluster
 - name: create user .kube directory
   file:
-    path: /home/{{ user }}/.kube
+    path: /home/{{ ansible_user }}/.kube
     state: directory
     mode: 0755
+    owner: "{{ ansible_user }}"
 
 - name: copy config to user home
   copy:
-    src: /root/.kube/config
+    src: /tmp/kube-config
     dest: /root/.kube/config
-    remote_src: yes
-    owner: "{{ user }}"
 
 - name: copy cluster join command
   copy:
     src: /tmp/cluster_join_command.sh
-    dest: /home/{{ user }}/cluster_join_command.sh
+    dest: /home/{{ ansible_user }}/cluster_join_command.sh
     mode: 0777
 
 - name: execute cluster join command
-  shell: /home/{{ user }}/cluster_join_command.sh
+  shell: /home/{{ ansible_user }}/cluster_join_command.sh --ignore-preflight-errors=Swap
   register: joined
 
 # print if join command was successful in console

@@ -1,4 +1,10 @@
 ---
+# clean previous cloudcore installations
+- name: remove kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: absent
+
 - name: create kubernetes CDRs for kubeedge
   shell: |
     kubectl apply -f https://raw.githubusercontent.com/kubeedge/kubeedge/master/build/crds/devices/devices_v1alpha2_device.yaml
@@ -23,7 +29,7 @@
   copy:
     src: ../files/certgen.sh
     dest: /etc/kubeedge/certgen.sh
-    mode: '0774'
+    mode: 0774
 
 - name: execute cert generation script
   shell: /etc/kubeedge/certgen.sh stream

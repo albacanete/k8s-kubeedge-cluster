@@ -1,4 +1,10 @@
 ---
+# clean previous edgecore installations
+- name: remove kubeedge directory
+  file:
+    path: /etc/kubeedge
+    state: absent
+
 # let root interact with the cluster
 - name: create root .kube directory
   file:
@@ -14,7 +20,7 @@
 # let user interact with the cluster
 - name: create user .kube directory
   file:
-    path: /home/{{ user }}/.kube
+    path: /home/{{ ansible_user }}/.kube
     state: directory
     mode: 0755
 
@@ -22,7 +28,7 @@
   copy:
     src: /tmp/kube-config
     dest: /root/.kube/config
-    owner: "{{ user }}"
+    owner: "{{ ansible_user }}"
 
 # create and set edgecore config file
 - name: create kubeedge config directory
@@ -36,30 +42,14 @@
     src: ../files/edgecore.yaml
     dest: /etc/kubeedge/config/edgecore.yaml
 
-# set the cloudcore IP in config file
-- name: set httpServer in config file
-  lineinfile:
-    path: /etc/kubeedge/config/edgecore.yaml
-    search_string: '    httpServer: ""'
-    line: "    httpServer: {{ cloudcore_ip }}"  
+# TODO: set podSandboxImage depending on architecture https://kubeedge.io/en/docs/setup/config/#modification-in-edgecore-yaml
 
-- name: set quic.server in config file
-  lineinfile:
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/replace_module.html
+- name: set the cloudcore IP in edgecore config
+  replace: 
     path: /etc/kubeedge/config/edgecore.yaml
-    search_string: '      server: ""'
-    line: "      server: {{ cloudcore_ip }}"  
-
-- name: set websocket.server in config file
-  lineinfile:
-    path: /etc/kubeedge/config/edgecore.yaml
-    search_string: '      server: ""'
-    line: "      server: {{ cloudcore_ip }}"  
-
-- name: set edgeStream in config file
-  lineinfile:
-    path: /etc/kubeedge/config/edgecore.yaml
-    search_string: '    server: ""'
-    line: "    server: {{ cloudcore_ip }}"  
+    regexp: "CLOUDCORE_IP"
+    replace: "{{ cloudcore_ip }}"
 
 # set the edgecore node IP 
 - name: set nodeIP in config file

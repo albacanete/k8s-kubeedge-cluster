@@ -6,14 +6,18 @@
     - configure-node
     - role: install-containerd
       # pass variables to role
-      arch: amd64               # machine architecture (Ansible returns x86_64/aarch64 https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
+      arch: arm64               # machine architecture (Ansible returns x86_64/aarch64 https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_vars_facts.html)
     - role: install-cni
       # pass variables to role
-      arch: amd64
+      arch: arm64
       cni_version: v1.2.0       # network CNI plugins version
     - role: install-edgecore
       # pass variables to role
-      arch: amd64
-      kubeedge_version: v1.13.0 # edgecore version
+      arch: arm64
+      kubeedge_version: v1.14.0 # edgecore version
       release: v1.23.16         # kubectl binaries version
-      user: kube                # user to store kubectl autocomplete
+      user: acanete             # user to store kubectl autocomplete
+    #- role: install-keadm
+    #  # pass variables to role
+    #  arch: arm64
+    #  keadm_version: v1.14.1     # edgecore version

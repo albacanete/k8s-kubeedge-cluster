@@ -16,7 +16,7 @@
 
 - name: remove user kubectl config 
   file:
-    path: "/home/{{ user }}/.kube/config"
+    path: "/home/{{ ansible_user }}/.kube/config"
     state: absent  
 
 # clean network
@@ -34,3 +34,10 @@
   community.general.nmcli:
     conn_name: flannel.1
     state: absent
+
+- name: restart containerd
+  systemd:
+    name: containerd
+    daemon_reload: true
+    enabled: true
+    state: restarted

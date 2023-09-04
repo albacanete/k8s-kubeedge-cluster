@@ -12,5 +12,8 @@
   become: yes     # root privileges
   roles:
     - role: edgecore-join
-      user: kube
-      cloudcore_ip: 192.168.56.37
+      cloudcore_ip: 192.168.50.21
+    #- role: keadm-join
+    #  user: acanete
+    #  cloudcore_ip: 192.168.50.21
+    #  kubeedge_version: v1.14.0     # edgecore version

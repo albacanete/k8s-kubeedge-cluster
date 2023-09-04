@@ -3,25 +3,25 @@
 - name: copy kubernetes config file
   copy:
     src: ../files/kubeadm-master.yaml
-    dest: /home/{{ user }}/kubeadm-master.yaml
+    dest: /home/{{ ansible_user }}/kubeadm-master.yaml
 
 # add advertise IP and Pod subnetwork to YAML configuration file 
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/lineinfile_module.html#examples
 - name: add advertise address to kubernetes config
   lineinfile:
-    path: /home/{{ user }}/kubeadm-master.yaml
+    path: /home/{{ ansible_user }}/kubeadm-master.yaml
     search_string: "  advertiseAddress:"
     line: "  advertiseAddress: {{ master_ip }}"
 
 - name: add pod subnetwork to kubernetes config
   lineinfile:
-    path: /home/{{ user }}/kubeadm-master.yaml
+    path: /home/{{ ansible_user }}/kubeadm-master.yaml
     search_string: "  podSubnet:"
     line: "  podSubnet: {{ pod_subnet }}"
 
 # initialize cluster
 - name: initialize kubernetes cluster
-  shell: kubeadm init --config /home/{{ user }}/kubeadm-master.yaml
+  shell: kubeadm init --config /home/{{ ansible_user }}/kubeadm-master.yaml
 
 # let root interact with newly created cluster
 - name: create root .kube directory
@@ -39,35 +39,38 @@
 # let user interact with newly created cluster
 - name: create user .kube directory
   file:
-    path: /home/{{ user }}/.kube
+    path: /home/{{ ansible_user }}/.kube
     state: directory
     mode: 0755
+    owner: "{{ ansible_user }}"
 
 - name: copy config to user home
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/{{ user }}/.kube/config
+    dest: /home/{{ ansible_user }}/.kube/config
     remote_src: yes
-    owner: "{{ user }}"
+    owner: "{{ ansible_user }}"
 
 # install flannel for cloud nodes
 - name: copy flannel-cloud yaml
   copy:
     src: ../files/kube-flannel-cloud.yaml
-    dest: /home/{{ user }}/kube-flannel-cloud.yaml
+    dest: /home/{{ ansible_user }}/kube-flannel-cloud.yaml
+    owner: "{{ ansible_user }}"
 
 - name: install flannel network in cloud
-  shell: kubectl apply -f /home/{{ user }}/kube-flannel-cloud.yaml
+  shell: kubectl apply -f /home/{{ ansible_user }}/kube-flannel-cloud.yaml
 
 # install flannel for edge nodes
 # https://github.com/kubeedge/kubeedge/issues/4521
 - name: copy flannel-edge yaml
   copy:
     src: ../files/kube-flannel-edge.yaml
-    dest: /home/{{ user }}/kube-flannel-edge.yaml
+    dest: /home/{{ ansible_user }}/kube-flannel-edge.yaml
+    owner: "{{ ansible_user }}"
 
 - name: install flannel network in edge
-  shell: kubectl apply -f /home/{{ user }}/kube-flannel-edge.yaml
+  shell: kubectl apply -f /home/{{ ansible_user }}/kube-flannel-edge.yaml
 
 # kubeedge rejects kube-proxy by default 
 # configure kube-proxy to no be deployed on edge nodes
@@ -83,7 +86,7 @@
 - debug:
     msg: "{{ join_command.stdout }}"
 
-- name:  copy join command to file in user home
+- name:  copy join command to file
   copy:
     content: "{{ join_command.stdout_lines[0] }}"
     dest: /etc/kubernetes/cluster_join_command.sh

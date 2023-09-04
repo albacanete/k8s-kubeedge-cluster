@@ -16,7 +16,7 @@ modules:
   edgeHub:
     enable: true
     heartbeat: 15
-    httpServer: ""
+    httpServer: https://CLOUDCORE_IP:10002
     messageBurst: 60
     messageQPS: 30
     projectID: e632aba927ea4ac2b575ec1603d56f10
@@ -24,7 +24,7 @@ modules:
       enable: false
       handshakeTimeout: 30
       readDeadline: 15
-      server: ""
+      server: CLOUDCORE_IP:10001
       writeDeadline: 15
     rotateCertificates: true
     tlsCaFile: /etc/kubeedge/ca/rootCA.crt
@@ -35,13 +35,13 @@ modules:
       enable: true
       handshakeTimeout: 30
       readDeadline: 15
-      server: ""
+      server: CLOUDCORE_IP:10000
       writeDeadline: 15
   edgeStream:
     enable: true    # enable kubectl logs in edge nodes (https://kubeedge.io/en/docs/setup/keadm/#enable-kubectl-logs-feature)
     handshakeTimeout: 30
     readDeadline: 15
-    server: ""
+    server: CLOUDCORE_IP:10004
     tlsTunnelCAFile: /etc/kubeedge/ca/rootCA.crt
     tlsTunnelCertFile: /etc/kubeedge/certs/server.crt
     tlsTunnelPrivateKeyFile: /etc/kubeedge/certs/server.key
